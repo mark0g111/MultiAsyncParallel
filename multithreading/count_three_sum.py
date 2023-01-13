@@ -7,8 +7,8 @@ def read_ints(path):
     return lst
 
 
-def count_three_sum(ints):
-    print('started count_three_sum')
+def count_three_sum(ints, thread_name='t'):
+    print(f'started count_three_sum in {thread_name}')
 
     n = len(ints)
     counter = 0
@@ -18,6 +18,6 @@ def count_three_sum(ints):
             for k in range(j + 1, n):
                 if ints[i] + ints[j] + ints[k] == 0:
                     counter += 1
-                    print(f'Triple found: {ints[i]}, {ints[j]}, {ints[k]}')
+                    print(f'Triple found in {thread_name}: {ints[i]}, {ints[j]}, {ints[k]}')
 
-    print(f'Ended count_three_sum. Triplets counter={counter}')
+    print(f'Ended count_three_sum in {thread_name}. Triplets counter={counter}')
