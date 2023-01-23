@@ -101,10 +101,30 @@ async def main_gather_cancel_on_future():
             print(f'Excepted is await {repr(ex)}')
 
 
+async def main_gather_return_exceptions():
+    async with aiohttp.ClientSession() as session:
+        tasks = [asyncio.create_task(coro) for coro in get_coros(session)]
+        future = asyncio.gather(*tasks, return_exceptions=True)
+
+        cancel_tasks(tasks, 2)
+
+        try:
+            print('awaiting')
+            results = await future
+            for result in results:
+                if isinstance(result, asyncio.exceptions.CancelledError):
+                    print(repr(result))
+                else:
+                    print_photo_titles(result)
+            print('after for')
+        except asyncio.exceptions.CancelledError as ex:
+            print(f'Exception is await {repr(ex)}')
+
+
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
     try:
-        loop.create_task(main_gather_cancel_on_tasks())
+        loop.create_task(main_gather_return_exceptions())
         loop.run_forever()
     finally:
         print('Closing loop')
