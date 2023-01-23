@@ -58,8 +58,34 @@ def cancel_future(loop, future, after):
         time.sleep(after)
         print('cancel future')
         loop.call_soon_threadsafe(future.cancel)
+
     t = threading.Thread(target=inner_cancel)
     t.start()
+
+
+def cancel_tasks(tasks, after):
+    def inner_cancel():
+        time.sleep(after)
+        for i, t in enumerate(tasks, start=1):
+            print(f'cancel {i}, {t}')
+            print(t.cancel())
+
+    t = threading.Thread(target=inner_cancel)
+    t.start()
+
+
+async def main_gather_cancel_on_tasks():
+    async with aiohttp.ClientSession() as session:
+        tasks = [asyncio.create_task(coro) for coro in get_coros(session)]
+        future = asyncio.gather(*tasks)
+
+        cancel_tasks(tasks, 2)
+
+        try:
+            print('awaiting future')
+            result = await future
+        except asyncio.exceptions.CancelledError as ex:
+            print(f'Excepted is await {repr(ex)}')
 
 
 async def main_gather_cancel_on_future():
@@ -78,7 +104,7 @@ async def main_gather_cancel_on_future():
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
     try:
-        loop.create_task(main_gather_cancel_on_future())
+        loop.create_task(main_gather_cancel_on_tasks())
         loop.run_forever()
     finally:
         print('Closing loop')
